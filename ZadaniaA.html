@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h3>Zadanie 1: Min, Max i Średnia</h3>
+    <p>Wpisz 10 liczb całkowitych oddzielonych przecinkami:</p>
+    <input type="text" id="liczbyInput" placeholder="np. 5, 12, -3, 8, ...">
+    <button onclick="obliczStatystyki()">Oblicz</button>
+    
+    <div id="wynik" style="margin-top: 20px;"></div>
+
+    <script>
+        function obliczStatystyki() {
+            const input = document.getElementById('liczbyInput').value;
+            // Konwersja tekstu na tablicę liczb
+            let tablica = input.split(',').map(num => parseInt(num.trim())).filter(n => !isNaN(n));
+
+            if (tablica.length !== 10) {
+                alert("Wprowadź dokładnie 10 liczb.");
+                return;
+            }
+
+            // 1. Znalezienie Min i Max (używamy spread operator ...)
+            const max = Math.max(...tablica);
+            const min = Math.min(...tablica);
+
+            // 2. Obliczenie średniej
+            const suma = tablica.reduce((a, b) => a + b, 0);
+            const srednia = suma / tablica.length;
+
+            // Wyświetlenie
+            document.getElementById('wynik').innerHTML = `
+                <p>Tablica: [${tablica.join(', ')}]</p>
+                <p>Największa wartość: <strong>${max}</strong></p>
+                <p>Najmniejsza wartość: <strong>${min}</strong></p>
+                <p>Średnia arytmetyczna: <strong>${srednia}</strong></p>
+            `;
+        }
+    </script>
+
+    <h3>Zadanie 2: Formularz kontaktowy</h3>
+    <form onsubmit="walidujFormularz(event)">
+        <label>Imię: <input type="text" id="imie"></label><br><br>
+        <label>Nazwisko: <input type="text" id="nazwisko"></label><br><br>
+        <label>Telefon (000-000-000): <input type="text" id="telefon"></label><br><br>
+        <button type="submit">Wyślij</button>
+    </form>
+
+    <div id="komunikaty" style="margin-top: 15px;"></div>
+
+    <script>
+        function walidujFormularz(e) {
+            e.preventDefault(); // Zatrzymaj wysyłanie formularza
+            const imie = document.getElementById('imie').value;
+            const nazwisko = document.getElementById('nazwisko').value;
+            const telefon = document.getElementById('telefon').value;
+            
+            let bledy = [];
+
+            // Walidacja długości imienia i nazwiska
+            if (imie.length < 3) bledy.push("Imię musi mieć co najmniej 3 znaki.");
+            if (nazwisko.length < 3) bledy.push("Nazwisko musi mieć co najmniej 3 znaki.");
+
+            // Walidacja telefonu za pomocą wyrażenia regularnego (RegExp)
+            // ^ oznacza początek, \d{3} to 3 cyfry, $ oznacza koniec
+            const wzorTelefonu = /^\d{3}-\d{3}-\d{3}$/;
+            if (!wzorTelefonu.test(telefon)) {
+                bledy.push("Telefon musi być w formacie 000-000-000 (9 cyfr z myślnikami).");
+            }
+
+            // Wyświetlanie wyników
+            const kontener = document.getElementById('komunikaty');
+            if (bledy.length > 0) {
+                kontener.innerHTML = `<ul class="error">${bledy.map(b => `<li>${b}</li>`).join('')}</ul>`;
+            } else {
+                kontener.innerHTML = `<p class="success">Formularz wysłany poprawnie!</p>`;
+            }
+        }
+    </script>
+
+    <h3>Zadanie 3: Zgadnij liczbę (1-50)</h3>
+    <input type="number" id="strzal" placeholder="Twoja liczba">
+    <button onclick="sprawdzLiczbe()">Sprawdź</button>
+    
+    <p id="info"></p>
+
+    <script>
+        // Losowanie liczby przy załadowaniu strony
+        // Math.random() daje 0-1, mnożymy razy 50, zaokrąglamy w dół i dodajemy 1
+        const wylosowana = Math.floor(Math.random() * 50) + 1;
+        
+        console.log("Dla testów (oszustwo): " + wylosowana); // Możesz podejrzeć w konsoli F12
+
+        function sprawdzLiczbe() {
+            const strzal = parseInt(document.getElementById('strzal').value);
+            const info = document.getElementById('info');
+
+            if (isNaN(strzal)) {
+                info.innerText = "Podaj poprawną liczbę!";
+                return;
+            }
+
+            if (strzal < wylosowana) {
+                info.innerText = "Za mało!";
+                document.body.style.backgroundColor = ""; // Reset koloru
+            } else if (strzal > wylosowana) {
+                info.innerText = "Za dużo!";
+                document.body.style.backgroundColor = ""; // Reset koloru
+            } else {
+                info.innerText = "Brawo! Zgadłeś liczbę! Gra skończona.";
+                document.body.style.backgroundColor = "lightgreen";
+                // Opcjonalnie blokujemy przycisk po wygranej
+                document.querySelector('button').disabled = true;
+            }
+        }
+    </script>
+
+    <h3>Zadanie 4: Generator par</h3>
+    <p>Wpisz elementy oddzielone spacją (np. "a b c").</p>
+    <label>Pole 1 (Kolumny): <input type="text" id="p1" value="a b c"></label><br><br>
+    <label>Pole 2 (Wiersze): <input type="text" id="p2" value="g c a"></label><br><br>
+    <button onclick="generujTabele()">Generuj</button>
+
+    <div id="tabelaContainer" style="margin-top: 20px;"></div>
+
+    <script>
+        function generujTabele() {
+            // Pobieramy dane i dzielimy po spacji
+            const kolumny = document.getElementById('p1').value.trim().split(/\s+/);
+            const wiersze = document.getElementById('p2').value.trim().split(/\s+/);
+
+            let html = '<table>';
+
+            // 1. Wiersz nagłówkowy (pusta komórka + elementy z Pola 1)
+            html += '<tr><th></th>'; 
+            kolumny.forEach(col => {
+                html += `<th>${col}</th>`;
+            });
+            html += '</tr>';
+
+            // 2. Generowanie wierszy danych
+            wiersze.forEach(rowItem => {
+                html += '<tr>';
+                // Pierwsza komórka w wierszu to nagłówek z Pola 2
+                html += `<th>${rowItem}</th>`;
+                
+                // Generowanie par (element wiersza + element kolumny)
+                kolumny.forEach(colItem => {
+                    // Przykład na zdjęciu sugeruje złączenie stringów (np. g + a = ga)
+                    html += `<td>${rowItem}${colItem}</td>`;
+                });
+                html += '</tr>';
+            });
+
+            html += '</table>';
+            document.getElementById('tabelaContainer').innerHTML = html;
+        }
+    </script>
+
+    <h3>Zadanie 5: Analiza tekstu</h3>
+    <textarea id="tekst" rows="5" cols="40" placeholder="Wpisz tekst tutaj..."></textarea><br>
+    <button onclick="analiza()">Sprawdź</button>
+
+    <ul id="wyniki"></ul>
+
+    <script>
+        function analiza() {
+            const text = document.getElementById('tekst').value;
+
+            // 1. Zliczanie liter (a-z), ignorując cyfry i znaki specjalne
+            // Regex /[a-z]/gi oznacza: a-z, g=global (wszystkie), i=insensitive (duże i małe)
+            const literyMatch = text.match(/[a-z]/gi);
+            const liczbaLiter = literyMatch ? literyMatch.length : 0;
+
+            // 2. Zliczanie słów (oddzielonych spacjami)
+            // split(/\s+/) dzieli po dowolnym białym znaku (spacja, tab, enter)
+            // filter sprawdza czy element nie jest pusty (np. podwójna spacja)
+            const slowa = text.split(/\s+/).filter(s => s.length > 0);
+            const liczbaSlow = slowa.length;
+
+            // 3. Sprawdzanie czy są słowa na "A" (ignorując wielkość liter)
+            // Używamy .some(), żeby sprawdzić czy CHOCIAŻ JEDNO spełnia warunek
+            const czyJestNaA = slowa.some(slowo => slowo.toLowerCase().startsWith('a'));
+            
+            // Alternatywnie: zliczanie ile ich jest (jeśli interpretować zadanie jako licznik)
+            const iloscNaA = slowa.filter(s => s.toLowerCase().startsWith('a')).length;
+
+            // Wyświetlenie listy
+            const lista = document.getElementById('wyniki');
+            lista.innerHTML = `
+                <li>Liczba wystąpień liter (a-z): <strong>${liczbaLiter}</strong></li>
+                <li>Liczba słów: <strong>${liczbaSlow}</strong></li>
+                <li>Czy są słowa na "A"?: <strong>${czyJestNaA ? "TAK" : "NIE"}</strong> (Ilość: ${iloscNaA})</li>
+            `;
+        }
+    </script>
+</body>
+</html>
